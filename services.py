@@ -1,6 +1,6 @@
 """Core learning services for LearnMind AI."""
 from __future__ import annotations
-import json, os, re, uuid
+import json, os, re, uuid, logging
 from pathlib import Path
 from typing import Any
 
@@ -85,7 +85,9 @@ Clearly label anything that is general knowledge rather than supported by the no
 NOTES:\n<study_notes>\n{notes[:16000] or '[No notes supplied]'}\n</study_notes>
 QUESTION: {question}\nGive a direct answer, intuitive explanation, example, and one quick-check question."""
         try: return ask_ai(prompt)
-        except Exception as exc: return f"**AI tutor unavailable.** {_safe_error(exc)}"
+        except Exception as exc:
+            logging.exception("AI tutor request failed")
+            return f"**AI tutor unavailable.** {_safe_error(exc)}"
     return (f"### Demo mode: {question}\n\nLearnMind's live AI is not connected. Add `GEMINI_API_KEY` in Streamlit Secrets to generate a real lesson.\n\n"
             f"Your selected level is **{level}**, language **{language}**, style **{style}**.\n\n"
             f"**Source status:** {'Study notes are loaded, but demo mode does not analyze them.' if notes else 'No notes uploaded.'}")

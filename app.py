@@ -24,6 +24,33 @@ st.markdown("""
 .hero{padding:26px 30px;border:1px solid #393b70;border-radius:22px;background:linear-gradient(120deg,#171e3a,#24204d);margin-bottom:22px}
 .hero h1{font-size:42px;color:#fff;margin:0}.hero p{color:#c2c8e8}
 .pill{display:inline-block;padding:5px 11px;border-radius:20px;background:#342b68;color:#c9baff;font-size:12px}
+/* Fix input and chat text visibility */
+.stApp input,
+.stApp textarea,
+.stApp [data-baseweb="input"] input,
+.stApp [data-baseweb="textarea"] textarea,
+.stApp [data-testid="stChatInput"] textarea {
+    background-color: #151c30 !important;
+    color: #f4f5ff !important;
+    -webkit-text-fill-color: #f4f5ff !important;
+    caret-color: #ffffff !important;
+}
+
+.stApp input::placeholder,
+.stApp textarea::placeholder {
+    color: #aab3d0 !important;
+    -webkit-text-fill-color: #aab3d0 !important;
+    opacity: 1 !important;
+}
+
+.stApp [data-testid="stChatMessage"] {
+    color: #f4f5ff !important;
+}
+
+.stApp [data-testid="stChatMessage"] p,
+.stApp [data-testid="stChatMessage"] li {
+    color: #f4f5ff !important;
+}
 </style>""", unsafe_allow_html=True)
 
 for key, default in {"notes":"","history":[],"quiz":None,"scores":[]}.items():
