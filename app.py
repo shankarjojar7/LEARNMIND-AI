@@ -1,9 +1,20 @@
 import os
 import streamlit as st
 from dotenv import load_dotenv
-from services import extract_text, tutor_response, make_quiz, make_study_plan, analyze_weak_topics, save_to_s3, save_progress
 
 load_dotenv()
+
+try:
+    secrets = st.secrets
+    for key in ("GEMINI_API_KEY", "GEMINI_MODEL", "AWS_REGION",
+                "AWS_DEFAULT_REGION", "BEDROCK_MODEL_ID", "MAX_TOKENS",
+                "S3_BUCKET", "DYNAMODB_TABLE"):
+        if key in secrets and secrets[key]:
+            os.environ[key] = str(secrets[key])
+except (FileNotFoundError, KeyError):
+    pass
+
+from services import extract_text, tutor_response, make_quiz, make_study_plan, analyze_weak_topics, save_to_s3, save_progress
 st.set_page_config(page_title="LearnMind AI", page_icon="🧠", layout="wide")
 st.markdown("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">", unsafe_allow_html=True)
 st.markdown("""
@@ -35,14 +46,36 @@ if page=="Learning Studio":
         up=st.file_uploader("Upload PDF, TXT or Markdown notes (max 10 MB)",type=["pdf","txt","md"])
         if up:
             try:
-                st.session_state.notes=extract_text(up)
-                st.success(f"Loaded {up.name} — {len(st.session_state.notes):,} characters")
+                if st.session_state.get("uploaded_name") != up.name:
+                    extracted = extract_text(up)
+                    st.session_state.notes = extracted
+                    st.session_state.uploaded_name = up.name
+                    st.session_state.notes_editor = extracted
+                st.success(f"Loaded {up.name} - {len(st.session_state.notes):,} characters")
                 if os.getenv("S3_BUCKET"):
-                    try: save_to_s3(up.getvalue(),up.name); st.caption("Encrypted copy saved to configured S3 bucket.")
-                    except Exception: st.warning("Notes loaded for this session, but the optional S3 backup failed. Check AWS configuration.")
-            except Exception as e: st.error(str(e))
-        pasted=st.text_area("Or paste your notes here",height=150)
-        if st.button("Use pasted notes"): st.session_state.notes=pasted; st.success("Notes added.")
+                    try:
+                        save_to_s3(up.getvalue(), up.name)
+                        st.caption("Optional S3 backup saved.")
+                    except Exception:
+                        st.warning("Notes loaded, but optional S3 backup failed.")
+            except Exception as e:
+                st.error(str(e))
+
+        if "notes_editor" not in st.session_state:
+            st.session_state.notes_editor = st.session_state.notes
+
+        pasted = st.text_area("Or paste your notes here", height=150)
+        if st.button("Use pasted notes"):
+            st.session_state.notes = pasted
+            st.session_state.notes_editor = pasted
+            st.success("Notes added.")
+
+        st.markdown("#### Review and edit your study notes")
+        st.text_area("Edit your notes below", key="notes_editor", height=260)
+        if st.button("Save edited notes"):
+            st.session_state.notes = st.session_state.notes_editor
+            st.success("Edited notes saved! AI Tutor and Quiz will use these notes.")
+
     with b:
         st.subheader("🎯 Personalize your lesson")
         st.session_state.profile={"level":st.selectbox("Your level",["Beginner","Intermediate","Advanced"]),

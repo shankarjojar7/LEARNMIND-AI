@@ -1,1 +1,7 @@
-.env\n.venv/\n__pycache__/\n.pytest_cache/\n*.pyc\n
+.env
+.streamlit/secrets.toml
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+*.backup
