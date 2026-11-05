@@ -36,7 +36,7 @@ def ask_ai(prompt: str) -> str:
     if api_key:
         from google import genai
         client = genai.Client(api_key=api_key)
-        model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+        model = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
         response = client.models.generate_content(model=model, contents=prompt)
         answer = response.text
         if not answer or not answer.strip():
